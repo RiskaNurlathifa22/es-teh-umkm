@@ -120,16 +120,7 @@
             background-color: #8b5c3c;
             color: white;
         }
-        @media (max-width: 768px) {
-            main {
-                flex-direction: column;
-                padding: 1.5rem;
-            }
-
-            .text, .image {
-                flex: 1 1 100%;
-            }
-        }
+        
         
 
     </style>
