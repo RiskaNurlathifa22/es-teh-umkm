@@ -137,6 +137,7 @@
         <a href="index.php">Home</a>
         <a href="menu.php">Menu</a>
         <a href="order.php">Pesan</a>
+        <a href="admin/login.php" style="float: right;">Login Admin</a>
     </nav>
 
     <main>
