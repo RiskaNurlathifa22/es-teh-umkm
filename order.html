@@ -1,4 +1,13 @@
-<?php include 'config.php'; ?>
+<?php
+session_start();
+include 'config.php';
+
+// Generate CSRF token hanya jika belum ada
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -68,26 +77,6 @@
             gap: 2rem;
         }
 
-        .text {
-            flex: 1 1 55%;
-        }
-
-        .text h2 {
-            color: #8b5c3c;
-            margin-bottom: 1rem;
-        }
-
-        .text h2.judul-tengah {
-            text-align: center;
-            color: #8b5c3c;
-            margin-bottom: 1rem;
-        }
-
-        .text p {
-            text-align: justify;
-            margin-bottom: 1rem;
-        }
-
         .image {
             flex: 1 1 40%;
             display: flex;
@@ -115,16 +104,51 @@
             text-decoration: underline;
         }
 
-        @media (max-width: 768px) {
-            main {
-                flex-direction: column;
-                padding: 1.5rem;
-            }
-
-            .text, .image {
-                flex: 1 1 100%;
-            }
+        .form-container {
+            flex: 1 1 50%;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: auto;
         }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        form label {
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        form input[type="text"],
+        form input[type="number"],
+        form select {
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        form button {
+            padding: 0.8rem;
+            background-color: #8b5c3c;
+            color: white;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form button:hover {
+            background-color: #6e4227;
+        }
+
+       
     </style>
 </head>
 <body>
@@ -141,27 +165,42 @@
     </nav>
 
     <main>
-        <div class="text">
-            <h2 class="judul-tengah">Tentang Kami</h2>
-            <p>
-                Sentra UMKM Es Teh hadir sebagai wujud kecintaan kami terhadap minuman sederhana yang digemari oleh semua kalangan: es teh. 
-                Kami percaya bahwa es teh bukan sekadar pelepas dahaga, melainkan juga bagian dari budaya dan kebersamaan masyarakat Indonesia.
-            </p>
-            <p>
-                Dengan bahan-bahan alami dan racikan khas, kami menyajikan berbagai varian rasa mulai dari teh klasik, teh susu, hingga teh buah kekinian. 
-                Setiap produk kami diracik oleh tangan-tangan UMKM lokal yang penuh semangat dan dedikasi dalam menciptakan cita rasa terbaik.
-            </p>
-            <p>
-                Bergabunglah dalam gerakan mendukung pelaku usaha lokal. Setiap gelas es teh yang Anda nikmati turut menghidupkan ekonomi rakyat dan membuka peluang usaha yang lebih luas.
-            </p>
-        </div>
-        <div class="image">
-            <img src="assets/images/es-teh-kekinian.jpg" alt="Es Teh Kekinian">
+        <div class="form-container">
+            <h2 style="text-align: center; color: #8b5c3c; margin-bottom: 1.5rem;">Form Pemesanan</h2>
+            <form action="process_order.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                
+                <label for="nama">Nama:</label>
+                <input type="text" id="nama" name="nama_pelanggan" required>
+
+                <label for="menu">Pilih Menu:</label>
+                <select id="menu" name="menu_id" required>
+                    <?php
+                    $sql = "SELECT * FROM menu";
+                    $result = $conn->query($sql);
+                    while($row = $result->fetch_assoc()):
+                    ?>
+                    <option value="<?= $row['id'] ?>">
+                        <?= htmlspecialchars($row['nama']) ?> (Rp <?= number_format($row['harga'], 0, ',', '.') ?>)
+                    </option>
+                    <?php endwhile; ?>
+                </select>
+
+                <label for="jumlah">Jumlah:</label>
+                <input type="number" id="jumlah" name="jumlah" min="1" required>
+
+                <button type="submit">Pesan</button>
+            </form>
         </div>
     </main>
 
+
     <footer>
-        <p>Hubungi kami: <a href="https://wa.me/628123456789" target="_blank">08123456789</a></p>
+        &copy; <?= date('Y') ?> Sentra UMKM Es Teh
     </footer>
 </body>
 </html>
+<?php
+$conn->close();
+?>
+
